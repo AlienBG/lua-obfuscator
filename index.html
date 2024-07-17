@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lua Script Obfuscator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 90%;
+            height: 200px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-family: monospace;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #output {
+            width: 90%;
+            height: 200px;
+            margin-top: 20px;
+            padding: 10px;
+            font-family: monospace;
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lua Script Obfuscator</h1>
+    <textarea id="inputScript" placeholder="Paste your Lua script here..."></textarea>
+    <button onclick="obfuscateScript()">Obfuscate Script</button>
+    <textarea id="outputScript" readonly placeholder="Obfuscated script will appear here..."></textarea>
+
+    <script>
+        function obfuscateScript() {
+            const inputScript = document.getElementById('inputScript').value;
+            const outputScript = obfuscate(inputScript);
+            document.getElementById('outputScript').value = outputScript;
+        }
+
+        function obfuscate(script) {
+            let obfuscated = script;
+
+            // Remove comments
+            obfuscated = obfuscated.replace(/--.*\n/g, '');
+
+            // Remove extra whitespaces and newlines
+            obfuscated = obfuscated.replace(/\s+/g, ' ');
+
+            // Replace variable names
+            let variableMap = {};
+            let currentIndex = 0;
+            function getNextVarName() {
+                currentIndex += 1;
+                return 'var' + currentIndex;
+            }
+
+            // Find all local variable names
+            let varRegex = /local\s+([a-zA-Z_]\w*)/g;
+            let match;
+            while (match = varRegex.exec(script)) {
+                let varName = match[1];
+                if (!variableMap[varName]) {
+                    variableMap[varName] = getNextVarName();
+                }
+            }
+
+            // Replace local variable names in the script
+            for (let originalName in variableMap) {
+                let newName = variableMap[originalName];
+                let varNameRegex = new RegExp('\\b' + originalName + '\\b', 'g');
+                obfuscated = obfuscated.replace(varNameRegex, newName);
+            }
+
+            return obfuscated;
+        }
+    </script>
+</body>
+</html>
